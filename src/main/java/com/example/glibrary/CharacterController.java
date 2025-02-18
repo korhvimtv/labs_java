@@ -27,4 +27,14 @@ public class CharacterController {
     public List<GameCharacter> getAllCharacters() {
         return characterService.getAllCharacters();
     }
+
+    @GetMapping("/search")
+    public List<GameCharacter> getCharactersByName(@RequestParam String name) {
+        return characterService.getCharactersByName(name);
+    }
+
+    @GetMapping("/{type}/{weapon}")
+    public List<GameCharacter> getCharacterByWeaponAndType(@PathVariable String weapon, @PathVariable String type) {
+        return characterService.getCharacterByWeaponAndType(weapon, type);
+    }
 }

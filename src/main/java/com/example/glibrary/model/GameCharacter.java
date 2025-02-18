@@ -1,4 +1,5 @@
 package com.example.glibrary.model;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -6,9 +7,13 @@ import lombok.Setter;
 @Setter
 public class GameCharacter {
 
+    @JsonProperty("name")
     private String name;
+    @JsonProperty("type")
     private String type;
+    @JsonProperty("role")
     private String role;
+    @JsonProperty("weapon")
     private String weapon;
 
     public GameCharacter() {}

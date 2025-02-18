@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CharacterService {
@@ -18,5 +19,17 @@ public class CharacterService {
 
     public List<GameCharacter> getAllCharacters() {
         return characters;
+    }
+
+    public List<GameCharacter> getCharactersByName(String name) {
+        return characters.stream()
+                .filter(character -> character.getName().equalsIgnoreCase(name))
+                .collect(Collectors.toList());
+    }
+
+    public List<GameCharacter> getCharacterByWeaponAndType(String weapon, String type) {
+        return characters.stream()
+                .filter(character -> character.getWeapon().equalsIgnoreCase(weapon) && character.getType().equalsIgnoreCase(type))
+                .collect(Collectors.toList());
     }
 }
