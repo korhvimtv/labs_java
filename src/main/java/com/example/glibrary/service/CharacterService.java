@@ -1,11 +1,9 @@
 package com.example.glibrary.service;
 
 import com.example.glibrary.model.GameCharacter;
-import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import org.springframework.stereotype.Service;
 
 @Service
 public class CharacterService {
@@ -29,7 +27,8 @@ public class CharacterService {
 
     public List<GameCharacter> getCharacterByWeaponAndType(String weapon, String type) {
         return characters.stream()
-                .filter(character -> character.getWeapon().equalsIgnoreCase(weapon) && character.getType().equalsIgnoreCase(type))
+                .filter(character -> character.getWeapon().equalsIgnoreCase(weapon)
+                        && character.getType().equalsIgnoreCase(type))
                 .toList();
     }
 }

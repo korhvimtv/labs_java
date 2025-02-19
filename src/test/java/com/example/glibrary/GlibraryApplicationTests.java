@@ -8,6 +8,7 @@ class GlibraryApplicationTests {
 
     @Test
     void contextLoads() {
+        throw new UnsupportedOperationException("WTF are you doing?");
     }
 
 }

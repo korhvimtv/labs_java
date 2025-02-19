@@ -1,11 +1,16 @@
 package com.example.glibrary;
 
 import com.example.glibrary.model.GameCharacter;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
 import com.example.glibrary.service.CharacterService;
-
 import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/characters")
@@ -34,7 +39,8 @@ public class CharacterController {
     }
 
     @GetMapping("/{type}/{weapon}")
-    public List<GameCharacter> getCharacterByWeaponAndType(@PathVariable String weapon, @PathVariable String type) {
+    public List<GameCharacter> getCharacterByWeaponAndType(@PathVariable String weapon,
+                                                           @PathVariable String type) {
         return characterService.getCharacterByWeaponAndType(weapon, type);
     }
 }
