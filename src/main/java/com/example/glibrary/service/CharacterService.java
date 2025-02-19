@@ -24,12 +24,12 @@ public class CharacterService {
     public List<GameCharacter> getCharactersByName(String name) {
         return characters.stream()
                 .filter(character -> character.getName().equalsIgnoreCase(name))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public List<GameCharacter> getCharacterByWeaponAndType(String weapon, String type) {
         return characters.stream()
                 .filter(character -> character.getWeapon().equalsIgnoreCase(weapon) && character.getType().equalsIgnoreCase(type))
-                .collect(Collectors.toList());
+                .toList();
     }
 }

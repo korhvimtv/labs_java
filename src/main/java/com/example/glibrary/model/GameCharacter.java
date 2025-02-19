@@ -16,8 +16,6 @@ public class GameCharacter {
     @JsonProperty("weapon")
     private String weapon;
 
-    public GameCharacter() {}
-
     public GameCharacter(String name, String type, String role, String weapon) {
         this.name = name;
         this.type = type;
