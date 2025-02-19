@@ -1,4 +1,4 @@
-package com.example.glibrary;
+package com.example.glibrary.controller;
 
 import com.example.glibrary.model.GameCharacter;
 import com.example.glibrary.service.CharacterService;
