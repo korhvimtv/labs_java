@@ -1,5 +1,6 @@
 package com.example.glibrary.model;
 
+import jakarta.annotation.*;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;

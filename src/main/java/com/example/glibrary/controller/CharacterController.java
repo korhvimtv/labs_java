@@ -33,14 +33,14 @@ public class CharacterController {
         return characterService.getAllCharacters();
     }
 
-    @GetMapping("/search")
-    public List<GameCharacter> getCharactersByName(@RequestParam String name) {
+    @GetMapping("/{name}")
+    public List<GameCharacter> getCharactersByName(@PathVariable String name) {
         return characterService.getCharactersByName(name);
     }
 
-    @GetMapping("/{type}/{weapon}")
-    public List<GameCharacter> getCharacterByWeaponAndType(@PathVariable String weapon,
-                                                           @PathVariable String type) {
+    @GetMapping("/search")
+    public List<GameCharacter> getCharacterByWeaponAndType(@RequestParam String weapon,
+                                                           @RequestParam String type) {
         return characterService.getCharacterByWeaponAndType(weapon, type);
     }
 }
