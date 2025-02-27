@@ -1,6 +1,5 @@
 package com.example.glibrary.model;
 
-import jakarta.annotation.*;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,11 +16,14 @@ public class GameCharacter {
     private String role;
     @JsonProperty("weapon")
     private String weapon;
+    @JsonProperty("rarity")
+    private GameRarity rarity;
 
-    public GameCharacter(String name, String type, String role, String weapon) {
+    public GameCharacter(String name, String type, String role, String weapon, GameRarity rarity) {
         this.name = name;
         this.type = type;
         this.role = role;
         this.weapon = weapon;
+        this.rarity = rarity;
     }
 }
