@@ -3,10 +3,16 @@ package com.example.glibrary.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
+import jakarta.persistence.*;
 
 @Getter
 @Setter
+@Entity
 public class GameCharacter {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
 
     @JsonProperty("name")
     private String name;
@@ -19,11 +25,5 @@ public class GameCharacter {
     @JsonProperty("rarity")
     private GameRarity rarity;
 
-    public GameCharacter(String name, String type, String role, String weapon, GameRarity rarity) {
-        this.name = name;
-        this.type = type;
-        this.role = role;
-        this.weapon = weapon;
-        this.rarity = rarity;
-    }
+    public GameCharacter () {}
 }

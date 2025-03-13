@@ -4,13 +4,7 @@ import com.example.glibrary.model.GameCharacter;
 import com.example.glibrary.service.CharacterService;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/characters")
@@ -24,23 +18,28 @@ public class CharacterController {
     }
 
     @PostMapping
-    public boolean addCharacter(@RequestBody GameCharacter character) {
-        return characterService.addCharacter(character);
+    public GameCharacter createCharacter(@RequestBody GameCharacter character) {
+        return characterService.createCharacter(character);
     }
 
     @GetMapping
-    public List<GameCharacter> getAllCharacters() {
-        return characterService.getAllCharacters();
+    public List<GameCharacter> readCharacters() {
+        return characterService.readCharacters();
     }
 
     @GetMapping("/{name}")
-    public List<GameCharacter> getCharactersByName(@PathVariable String name) {
-        return characterService.getCharactersByName(name);
+    public GameCharacter readCharacter(@PathVariable String name) {
+        return characterService.readCharacter(name);
     }
 
-    @GetMapping("/search")
-    public List<GameCharacter> getCharacterByWeaponAndType(@RequestParam String weapon,
-                                                           @RequestParam String type) {
-        return characterService.getCharacterByWeaponAndType(weapon, type);
+    @PutMapping("/{name}")
+    public GameCharacter updateCharacter(@PathVariable String name, @RequestBody GameCharacter character) {
+        return characterService.updateCharacter(name, character);
     }
+
+    @DeleteMapping("/{name}")
+    public void deleteCharacter(@PathVariable String name) {
+        characterService.deleteCharacter(name);
+    }
+
 }
