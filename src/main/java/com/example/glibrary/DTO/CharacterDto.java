@@ -6,6 +6,7 @@ import lombok.Data;
 
 @Data
 public class CharacterDto {
+
     private Long id;
     private String name;
     private String type;
@@ -13,4 +14,5 @@ public class CharacterDto {
     private String weapon;
     private GameRarity rarity;
     private Set<Long> relicIds;
+    private Set<String> regionNames;
 }

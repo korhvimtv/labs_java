@@ -1,22 +1,16 @@
 package com.example.glibrary.controller;
 
-import com.example.glibrary.DTO.RelicWithCharactersDto;
 import com.example.glibrary.DTO.RelicsDto;
 import com.example.glibrary.model.GameRelics;
 import com.example.glibrary.service.RelicsService;
 import java.util.List;
 import java.util.Set;
+
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/relics")
@@ -24,63 +18,52 @@ public class RelicsController {
 
     private final RelicsService relicsService;
 
-    @Autowired
     public RelicsController(RelicsService relicsService) {
+
         this.relicsService = relicsService;
     }
 
-    // Создание новой реликвии
-    // Создание новой реликвии
     @PostMapping
-    public ResponseEntity<RelicsDto> createRelic(@RequestBody RelicsDto relicDto) {
-        RelicsDto createdRelic = relicsService.createRelic(relicDto);
-        return new ResponseEntity<>(createdRelic, HttpStatus.CREATED);
-    }
+    public ResponseEntity<GameRelics> createRelic(@RequestBody RelicsDto relicsDto) {
 
-    // Получение всех реликвий
-    @GetMapping
-    public ResponseEntity<List<RelicsDto>> getAllRelics() {
+        GameRelics createdRelics = relicsService.createRelic(relicsDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdRelics);
+   }
+
+   @GetMapping
+    public ResponseEntity<List<RelicsDto>> readRelics() {
+
         List<RelicsDto> relics = relicsService.readRelics();
-        return ResponseEntity.ok(relics);
+        return ResponseEntity.status(HttpStatus.OK).body(relics);
     }
 
-    // Получение реликвии по имени
-    @GetMapping("/{rName}")
-    public ResponseEntity<RelicsDto> getRelicByName(@PathVariable String rName) {
-        RelicsDto relic = relicsService.readRelic(rName);
-        return ResponseEntity.ok(relic);
+    @GetMapping("/{name}")
+    public ResponseEntity<RelicsDto> readRelicsByName(@PathVariable String name) {
+
+        return relicsService.readRelicsByName(name)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    // Обновление реликвии
-    @PutMapping("/{rName}")
-    public ResponseEntity<RelicsDto> updateRelic(@RequestBody GameRelics relic) {
-        RelicsDto updatedRelic = relicsService.updateRelic(relic);
-        return ResponseEntity.ok(updatedRelic);
+    @PutMapping("/{name}")
+    public ResponseEntity<GameRelics> updateRelic(@PathVariable String name, @RequestBody RelicsDto relicsDto) {
+
+        GameRelics updatedRelic = relicsService.updateRelic(name, relicsDto);
+        return ResponseEntity.status(HttpStatus.OK).body(updatedRelic);
     }
 
-    // Удаление реликвии
-    @DeleteMapping("/{rName}")
-    public ResponseEntity<Void> deleteRelic(@PathVariable String rName) {
-        relicsService.deleteRelic(rName);
-        return ResponseEntity.noContent().build();
+    @PatchMapping("/{RelicName}/add/{CharacterName}")
+    public ResponseEntity<GameRelics> updateRelicCharacter(@PathVariable String RelicName, @PathVariable String CharacterName) {
+
+        GameRelics updatedRelic = relicsService.updateRelicCharacter(RelicName, CharacterName);
+        return ResponseEntity.status(HttpStatus.OK).body(updatedRelic);
     }
 
-    // Добавление персонажей к артефакту по имени
-    @PostMapping("/{name}/characters")
-    public ResponseEntity<RelicsDto> addCharactersToRelic(
-            @PathVariable String name,
-            @RequestBody Set<String> characterNames) {
-
-        RelicsDto updatedRelic = relicsService.addCharactersToRelic(name, characterNames);
-        return ResponseEntity.ok(updatedRelic);
-    }
-
-    // Получение артефакта с его персонажами по имени
-    @GetMapping("/{name}/characters")
-    public ResponseEntity<RelicWithCharactersDto> getRelicWithCharacters(@PathVariable
-                                                                             String name) {
-        RelicWithCharactersDto relicWithCharacters = relicsService.getRelicWithCharacters(name);
-        return ResponseEntity.ok(relicWithCharacters);
+    @Transactional
+    @DeleteMapping("/{name}")
+    public ResponseEntity<Void> deleteRelic(@PathVariable String name) {
+        relicsService.deleteRelic(name);
+        return ResponseEntity.noContent().build(); // Возвращаем корректный HTTP статус 204
     }
 }
 

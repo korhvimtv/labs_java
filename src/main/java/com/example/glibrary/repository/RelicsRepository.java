@@ -7,5 +7,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface RelicsRepository extends JpaRepository<GameRelics, Long> {
+
     Optional<GameRelics> findByrName(String name);
+
+    void deleteByrName(String relicsName);
 }

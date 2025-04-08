@@ -2,19 +2,15 @@ package com.example.glibrary.controller;
 
 import com.example.glibrary.DTO.CharacterDto;
 import com.example.glibrary.DTO.RegionDto;
+import com.example.glibrary.model.GameRegion;
 import com.example.glibrary.service.RegionService;
 import java.util.List;
+
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/regions")
@@ -22,48 +18,51 @@ public class RegionController {
 
     private final RegionService regionService;
 
-    @Autowired
     public RegionController(RegionService regionService) {
+
         this.regionService = regionService;
     }
 
     @PostMapping
-    public ResponseEntity<RegionDto> createRegion(@RequestBody RegionDto regionDto) {
-        RegionDto created = regionService.createRegion(regionDto);
-        return new ResponseEntity<>(created, HttpStatus.CREATED);
-    }
+    public ResponseEntity<GameRegion> createRegion(@RequestBody RegionDto regionDto) {
 
-    @PutMapping("/{id}")
-    public ResponseEntity<RegionDto> updateRegion(@PathVariable Long id,
-                                                  @RequestBody RegionDto regionDto) {
-        RegionDto updatedRegion = regionService.updateRegion(id, regionDto);
-        return ResponseEntity.ok(updatedRegion);
+        GameRegion createdRegion = regionService.createRegion(regionDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdRegion);
     }
 
     @GetMapping
     public ResponseEntity<List<RegionDto>> readRegions() {
+
         List<RegionDto> regions = regionService.readRegions();
-        return ResponseEntity.ok(regions);
+        return ResponseEntity.status(HttpStatus.OK).body(regions);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<RegionDto> readRegion(@PathVariable Long id) {
-        RegionDto region = regionService.readRegion(id);
-        return ResponseEntity.ok(region);
+    @GetMapping("/{name}")
+    public ResponseEntity<RegionDto> readRegionByName(@PathVariable String name) {
+
+        return regionService.readRegionByName(name)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteRegion(@PathVariable Long id) {
-        regionService.deleteRegion(id);
+    @PutMapping("/{name}")
+    public ResponseEntity<GameRegion> updateRegion(@PathVariable String name, @RequestBody RegionDto regionDto) {
+
+        GameRegion updatedRegion = regionService.updateRegion(name, regionDto);
+        return ResponseEntity.status(HttpStatus.OK).body(updatedRegion);
+    }
+
+    @PatchMapping("/{regionName}/add/{characterName}")
+    public ResponseEntity<RegionDto> updateRegionCharacter(@PathVariable String characterName, @PathVariable String regionName) {
+        RegionDto updatedRegion = regionService.updateRegionCharacter(characterName, regionName);
+        return ResponseEntity.status(HttpStatus.OK).body(updatedRegion);
+    }
+
+    @Transactional
+    @DeleteMapping("/{name}")
+    public ResponseEntity<Void> deleteRegion(@PathVariable String name) {
+        regionService.deleteRegion(name);
         return ResponseEntity.noContent().build();
     }
-
-    @PutMapping("/{characterId}/assign/{regionId}")
-    public ResponseEntity<CharacterDto> assignCharacterToRegion(
-            @PathVariable Long characterId,
-            @PathVariable Long regionId) {
-        CharacterDto updatedCharacter = regionService
-                .assignCharacterToRegion(characterId, regionId);
-        return ResponseEntity.ok(updatedCharacter);
-    }
 }
+

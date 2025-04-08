@@ -29,7 +29,7 @@ public class GameRelics {
 
     @ManyToMany(mappedBy = "recRelics", fetch = FetchType.LAZY)
     @JsonBackReference
-    private Set<GameCharacter> recCharacters = new HashSet<>();
+    private Set<GameCharacter> characters = new HashSet<>();
 
     public GameRelics() {}
 }

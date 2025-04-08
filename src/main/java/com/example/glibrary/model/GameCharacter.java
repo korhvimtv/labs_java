@@ -2,6 +2,7 @@ package com.example.glibrary.model;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -36,7 +37,7 @@ public class GameCharacter {
     @JsonProperty("rarity")
     private GameRarity rarity;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JoinTable(
             name = "character_relics",
             joinColumns = @JoinColumn(name = "character_id"),
@@ -45,7 +46,7 @@ public class GameCharacter {
     @JsonManagedReference
     private Set<GameRelics> recRelics = new HashSet<>();
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "region_id")
     private GameRegion region;
 
