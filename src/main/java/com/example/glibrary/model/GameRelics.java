@@ -1,29 +1,35 @@
 package com.example.glibrary.model;
 
-import com.fasterxml.jackson.annotation.JsonFilter;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@Entity
 public class GameRelics {
 
-    @JsonFilter("rName")
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+
     private String rName;
-    @JsonFilter("rType")
     private String rType;
-    @JsonFilter("r2pcs")
     private String r2pcs;
-    @JsonFilter("r4pcs")
     private String r4pcs;
-    @JsonFilter("rRarity")
     private GameRarity rRarity;
 
-    public GameRelics(String rName, String rType, String r2pcs, String r4psc, GameRarity rRarity) {
-        this.rName = rName;
-        this.rType = rType;
-        this.r2pcs = r2pcs;
-        this.r4pcs = r4psc;
-        this.rRarity = rRarity;
-    }
+    @ManyToMany(mappedBy = "recRelics", fetch = FetchType.LAZY)
+    @JsonBackReference
+    private Set<GameCharacter> recCharacters = new HashSet<>();
+
+    public GameRelics() {}
 }
