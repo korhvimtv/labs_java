@@ -1,13 +1,14 @@
 package com.example.glibrary.service;
 
 import com.example.glibrary.DTO.CharacterDto;
+import com.example.glibrary.exception.NotFoundException;
 import com.example.glibrary.DTO.RegionDto;
 import com.example.glibrary.DTO.RelicsDto;
 import com.example.glibrary.cache.CharacterCache;
 import com.example.glibrary.model.Character;
+import com.example.glibrary.model.Region;
 import com.example.glibrary.model.Relic;
 import com.example.glibrary.repository.CharacterRepository;
-import jakarta.persistence.EntityNotFoundException;
 
 import java.util.HashSet;
 import java.util.List;
@@ -23,11 +24,16 @@ public class CharacterService {
 
     private final CharacterRepository characterRepository;
     private final CharacterCache characterCache;
+    private final VisitCounterService visitCounterService;
+    private final RateLimiterService rateLimiterService;
 
-    public CharacterService(CharacterRepository characterRepository, CharacterCache characterCache) {
+    public CharacterService(CharacterRepository characterRepository, CharacterCache characterCache,
+                            VisitCounterService visitCounterService, RateLimiterService rateLimiterService) {
 
         this.characterRepository = characterRepository;
         this.characterCache = characterCache;
+        this.visitCounterService = visitCounterService;
+        this.rateLimiterService = rateLimiterService;
     }
 
     public Character createCharacter(CharacterDto characterDto) {
@@ -43,18 +49,40 @@ public class CharacterService {
         return characterRepository.save(character);
     }
 
-    public List<CharacterDto> readCharacters() {
+    public List<CharacterDto> createBulkCharacters(List<CharacterDto> characterDtos) {
+        List<Character> characters = characterDtos.stream()
+                .map(this::toEntity)
+                .collect(Collectors.toList());
 
-        return characterRepository.findAll().stream()
+        List<Character> savedCharacters = characterRepository.saveAll(characters);
+
+        return savedCharacters.stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
 
-    public Optional<CharacterDto> readCharacterByName(String characterName) {
+    public List<CharacterDto> readCharacters() {
+
+        List<CharacterDto> characters = characterRepository.findAll().stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+
+        if (characters.isEmpty()) {
+            throw new NotFoundException("List of Characters is empty");
+        }
+
+        return characters;
+    }
+
+    public CharacterDto readCharacterByName(String characterName) {
+
+        rateLimiterService.validateRequestRate();
+
+        visitCounterService.incrementCharacterVisit(characterName);
 
         Optional<CharacterDto> cachedCharacter = characterCache.get(characterName);
         if (cachedCharacter.isPresent()) {
-            return cachedCharacter;
+            return cachedCharacter.get();
         }
 
         return characterRepository.findByName(characterName)
@@ -62,20 +90,32 @@ public class CharacterService {
                     CharacterDto dto = toDto(character);
                     characterCache.put(characterName, dto);
                     return dto;
-                });
+                })
+                .orElseThrow(() -> new NotFoundException("Character '" + characterName + "' not found"));
     }
 
     public List<CharacterDto> readCharacterByTypeAndRole(String type, String role) {
-
-        return characterRepository.findByTypeAndRole(type, role).stream()
+        List<CharacterDto> characters = characterRepository.findByTypeAndRole(type, role).stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
+
+        if (characters.isEmpty()) {
+            throw new NotFoundException("Character with type '" + type + "' and role '" + role + "' not found");
+        }
+
+        return characters;
     }
 
     public List<CharacterDto> findCharactersByRegionName(String regionName) {
-        return characterRepository.findByRegionName(regionName).stream()
+        List<CharacterDto> characters = characterRepository.findByRegionName(regionName).stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
+
+        if (characters.isEmpty()) {
+            throw new NotFoundException("Characters from '" + regionName + "' not found");
+        }
+
+        return characters;
     }
 
     public Character updateCharacter(String characterName, CharacterDto characterDto) {
@@ -94,14 +134,13 @@ public class CharacterService {
                     }
 
                     return updatedCharacter;
-                }).orElseThrow(EntityNotFoundException::new);
+                }).orElseThrow(() -> new NotFoundException("Character '" + characterName + "' not found"));
     }
 
     @Transactional
     public void deleteCharacter(String characterName) {
-
         Character character = characterRepository.findByName(characterName)
-                .orElseThrow(() -> new EntityNotFoundException("Character with name " + characterName + " not found"));
+                .orElseThrow(() -> new NotFoundException("Character '" + characterName + "' not found"));
 
         if (character.getRecRelics() != null) {
             character.getRecRelics().forEach(relic -> relic.getCharacters().remove(character));
@@ -119,6 +158,7 @@ public class CharacterService {
     }
 
     private CharacterDto toDto(Character character) {
+
         CharacterDto dto = new CharacterDto();
 
         dto.setId(character.getId());
@@ -128,7 +168,6 @@ public class CharacterService {
         dto.setWeapon(character.getWeapon());
         dto.setRarity(character.getRarity());
 
-        // Преобразование Relic в RelicsDto
         Set<RelicsDto> relicsDtos = new HashSet<>();
         if (character.getRecRelics() != null) {
             for (Relic relic : character.getRecRelics()) {
@@ -144,7 +183,6 @@ public class CharacterService {
         }
         dto.setRelic(relicsDtos);
 
-        // Преобразование Region в RegionDto
         Set<RegionDto> regionDtos = new HashSet<>();
         if (character.getRegion() != null) {
             RegionDto regionDto = new RegionDto();
@@ -157,4 +195,43 @@ public class CharacterService {
 
         return dto;
     }
+
+    private Character toEntity(CharacterDto dto) {
+
+        Character character = new Character();
+
+        character.setId(dto.getId());
+        character.setName(dto.getName());
+        character.setType(dto.getType());
+        character.setRole(dto.getRole());
+        character.setWeapon(dto.getWeapon());
+        character.setRarity(dto.getRarity());
+
+        Set<Relic> relics = new HashSet<>();
+        if (dto.getRelic() != null) {
+            for (RelicsDto relicDto : dto.getRelic()) {
+                Relic relic = new Relic();
+                relic.setId(relicDto.getId());
+                relic.setName(relicDto.getName());
+                relic.setType(relicDto.getType());
+                relic.setPcs2(relicDto.getPcs2());
+                relic.setPcs4(relicDto.getPcs4());
+                relic.setRarity(relicDto.getRarity());
+                relics.add(relic);
+            }
+        }
+        character.setRecRelics(relics);
+
+        if (dto.getRegion() != null && !dto.getRegion().isEmpty()) {
+            RegionDto regionDto = dto.getRegion().iterator().next();
+            Region region = new Region();
+            region.setId(regionDto.getId());
+            region.setName(regionDto.getName());
+            region.setArchon(regionDto.getArchon());
+            character.setRegion(region);
+        }
+
+        return character;
+    }
+
 }

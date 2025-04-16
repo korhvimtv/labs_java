@@ -4,6 +4,9 @@ import com.example.glibrary.model.Rarity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.HashSet;
 import java.util.Set;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,16 +17,21 @@ import lombok.Setter;
 public class RelicsDto {
 
     private Long id;
-    @JsonProperty("name")
+
+    @NotBlank(message = "Relic Name Cant be NULL")
     private String name;
-    @JsonProperty("type")
+
+    @NotBlank(message = "Relic Type Cant be NULL")
     private String type;
-    @JsonProperty("pcs2")
+
+    @NotBlank(message = "Relic Bonus Cant be NULL")
     private String pcs2;
-    @JsonProperty("pcs4")
+
+    @NotBlank(message = "Relic Bonus Cant be NULL")
     private String pcs4;
-    @JsonProperty("rarity")
+
+    @NotNull(message = "Relic Rarity Cant be NULL")
     private Rarity rarity;
-    @JsonProperty("characterId")
+
     private Set<Long> characterId = new HashSet<>();
 }

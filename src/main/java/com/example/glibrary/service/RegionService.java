@@ -2,6 +2,7 @@ package com.example.glibrary.service;
 
 import com.example.glibrary.DTO.CharacterDto;
 import com.example.glibrary.DTO.RegionDto;
+import com.example.glibrary.exception.NotFoundException;
 import com.example.glibrary.model.Character;
 import com.example.glibrary.model.Region;
 import com.example.glibrary.repository.CharacterRepository;
@@ -9,6 +10,7 @@ import com.example.glibrary.repository.RegionRepository;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -40,42 +42,48 @@ public class RegionService {
     }
 
     public List<RegionDto> readRegions() {
-        return regionRepository.findAll().stream()
+        List<RegionDto> regions = regionRepository.findAll().stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
+
+        if (regions.isEmpty()) {
+            throw new NotFoundException("List of Regions is empty");
+        }
+
+        return regions;
     }
 
-    public Optional<RegionDto> readRegionByName(String regionName) {
+    public RegionDto readRegionByName(String regionName) {
         if (cache.containsKey(regionName)) {
-            return Optional.of(cache.get(regionName)); // Берем из кэша
+            return cache.get(regionName);  // Берем из кэша
         }
 
         return regionRepository.findByName(regionName)
                 .map(region -> {
-                    RegionDto dto = toDto(region); // Конвертируем в DTO
-                    cache.put(regionName, dto); // Кладем в кэш
+                    RegionDto dto = toDto(region);  // Конвертируем в DTO
+                    cache.put(regionName, dto);     // Кладем в кэш
                     return dto;
-                });
+                })
+                .orElseThrow(() -> new NotFoundException("Region '" + regionName + "' not found"));
     }
 
-    public Region updateRegion(String regionName, RegionDto regionDto) {
 
+    public Region updateRegion(String regionName, RegionDto regionDto) {
         return regionRepository.findByName(regionName)
                 .map(region -> {
                     region.setName(regionDto.getName());
                     region.setArchon(regionDto.getArchon());
                     return regionRepository.save(region);
-                }).orElseThrow(EntityNotFoundException::new);
-
+                })
+                .orElseThrow(() -> new NotFoundException("Region with name " + regionName + " not found"));
     }
 
     public RegionDto updateRegionCharacter(String characterName, String regionName) {
-
         Character character = characterRepository.findByName(characterName)
-                .orElseThrow(() -> new EntityNotFoundException("Character with name " + characterName + " not found"));
+                .orElseThrow(() -> new NotFoundException("Character with name " + characterName + " not found"));
 
         Region region = regionRepository.findByName(regionName)
-                .orElseThrow(() -> new EntityNotFoundException("Region with name " + regionName + " not found"));
+                .orElseThrow(() -> new NotFoundException("Region with name " + regionName + " not found"));
 
         character.setRegion(region);
         region.getCharacters().add(character);
@@ -83,18 +91,26 @@ public class RegionService {
         characterRepository.save(character);
         regionRepository.save(region);
 
-        return toDto(region); // Возвращаем DTO
+        return toDto(region);
     }
 
     @Transactional
     public void deleteRegion(String regionName) {
         Region region = regionRepository.findByName(regionName)
-                .orElseThrow(() -> new EntityNotFoundException("Region with name " + regionName + " not found"));
+                .orElseThrow(() -> new NotFoundException("Region with name " + regionName + " not found"));
 
-        region.getCharacters().forEach(character -> character.setRegion(null));
+        Set<Character> characters = region.getCharacters();
+
+        characters.forEach(character -> {
+            character.setRegion(null);
+            characterRepository.save(character);
+        });
+
+        region.getCharacters().clear();
 
         regionRepository.delete(region);
     }
+
 
     private RegionDto toDto(Region region) {
         RegionDto dto = new RegionDto();
