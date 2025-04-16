@@ -20,7 +20,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-public class GameCharacter {
+public class Character {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -35,7 +35,7 @@ public class GameCharacter {
     @JsonProperty("weapon")
     private String weapon;
     @JsonProperty("rarity")
-    private GameRarity rarity;
+    private Rarity rarity;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JoinTable(
@@ -44,11 +44,11 @@ public class GameCharacter {
             inverseJoinColumns = @JoinColumn(name = "relic_id")
     )
     @JsonManagedReference
-    private Set<GameRelics> recRelics = new HashSet<>();
+    private Set<Relic> recRelics = new HashSet<>();
 
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "region_id")
-    private GameRegion region;
+    private Region region;
 
-    public GameCharacter() {}
+    public Character() {}
 }

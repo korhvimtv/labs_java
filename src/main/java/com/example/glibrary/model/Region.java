@@ -15,17 +15,18 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-public class GameRegion {
+public class Region {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    String regionName;
-    String archonRegion;
+    String name;
+    String archon;
 
     @OneToMany(mappedBy = "region", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private Set<GameCharacter> characters = new HashSet<>();
+    private Set<Character> characters = new HashSet<>();
 
-    public GameRegion() {}
+    public Region() {}
+
 }

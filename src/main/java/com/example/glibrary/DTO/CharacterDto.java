@@ -1,6 +1,6 @@
 package com.example.glibrary.DTO;
 
-import com.example.glibrary.model.GameRarity;
+import com.example.glibrary.model.Rarity;
 import java.util.Set;
 import lombok.Data;
 
@@ -12,7 +12,7 @@ public class CharacterDto {
     private String type;
     private String role;
     private String weapon;
-    private GameRarity rarity;
-    private Set<Long> relicIds;
-    private Set<String> regionNames;
+    private Rarity rarity;
+    private Set<RelicsDto> relic;
+    private Set<RegionDto> region;
 }

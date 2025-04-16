@@ -15,21 +15,21 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-public class GameRelics {
+public class Relic {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    private String rName;
-    private String rType;
-    private String r2pcs;
-    private String r4pcs;
-    private GameRarity rRarity;
+    private String name;
+    private String type;
+    private String pcs2;
+    private String pcs4;
+    private Rarity rarity;
 
     @ManyToMany(mappedBy = "recRelics", fetch = FetchType.LAZY)
     @JsonBackReference
-    private Set<GameCharacter> characters = new HashSet<>();
+    private Set<Character> characters = new HashSet<>();
 
-    public GameRelics() {}
+    public Relic() {}
 }

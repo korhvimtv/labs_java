@@ -12,7 +12,7 @@ import lombok.Setter;
 public class RegionDto {
 
     private Long id;
-    private String regionName;
-    private String archonRegion;
+    private String name;
+    private String archon;
     private Set<CharacterDto> characters;
 }

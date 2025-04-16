@@ -1,6 +1,6 @@
 package com.example.glibrary.model;
 
-public enum GameRarity {
+public enum Rarity {
     Star1,
     Star2,
     Star3,

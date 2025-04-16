@@ -1,14 +1,16 @@
 package com.example.glibrary.service;
 
 import com.example.glibrary.DTO.RelicsDto;
-import com.example.glibrary.model.GameCharacter;
-import com.example.glibrary.model.GameRelics;
+import com.example.glibrary.model.Character;
+import com.example.glibrary.model.Relic;
 import com.example.glibrary.repository.CharacterRepository;
 import com.example.glibrary.repository.RelicsRepository;
 import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import jakarta.transaction.Transactional;
@@ -19,6 +21,7 @@ public class RelicsService {
 
     private final RelicsRepository relicsRepository;
     private final CharacterRepository characterRepository;
+    private final Map<String, RelicsDto> cache = new ConcurrentHashMap<>();
 
     public RelicsService(RelicsRepository relicsRepository, CharacterRepository characterRepository) {
         
@@ -26,15 +29,15 @@ public class RelicsService {
         this.characterRepository = characterRepository;
     }
 
-    public GameRelics createRelic(RelicsDto relicsDto) {
+    public Relic createRelic(RelicsDto relicsDto) {
 
-        GameRelics relic = new GameRelics();
+        Relic relic = new Relic();
 
-        relic.setRName(relicsDto.getRName());
-        relic.setRType(relicsDto.getRType());
-        relic.setR2pcs(relicsDto.getR2pcs());
-        relic.setR4pcs(relicsDto.getR4pcs());
-        relic.setRRarity(relicsDto.getRRarity());
+        relic.setName(relicsDto.getName());
+        relic.setType(relicsDto.getType());
+        relic.setPcs2(relicsDto.getPcs2());
+        relic.setPcs4(relicsDto.getPcs4());
+        relic.setRarity(relicsDto.getRarity());
 
         return relicsRepository.save(relic);
     }
@@ -48,63 +51,71 @@ public class RelicsService {
 
     public Optional<RelicsDto> readRelicsByName(String relicsName) {
 
-        return relicsRepository.findByrName(relicsName)
-                .map(this::toDto);
+        if (cache.containsKey(relicsName)) {
+            return Optional.of(cache.get(relicsName)); // Берем из кэша
+        }
+
+        return relicsRepository.findByName(relicsName)
+                .map(relics -> {
+                    RelicsDto dto = toDto(relics); // Конвертируем в DTO
+                    cache.put(relicsName, dto); // Кладем в кэш
+                    return dto;
+                });
     }
 
-    public GameRelics updateRelic(String relicsName, RelicsDto relicsDto) {
+    public Relic updateRelic(String relicsName, RelicsDto relicsDto) {
 
-        return relicsRepository.findByrName(relicsName)
+        return relicsRepository.findByName(relicsName)
                 .map (relics -> {
-                    relics.setRName(relicsDto.getRName());
-                    relics.setRType(relicsDto.getRType());
-                    relics.setR2pcs(relicsDto.getR2pcs());
-                    relics.setR4pcs(relicsDto.getR4pcs());
-                    relics.setRRarity(relicsDto.getRRarity());
+                    relics.setName(relicsDto.getName());
+                    relics.setType(relicsDto.getType());
+                    relics.setPcs2(relicsDto.getPcs2());
+                    relics.setPcs4(relicsDto.getPcs4());
+                    relics.setRarity(relicsDto.getRarity());
                     return relicsRepository.save(relics);
                 }).orElseThrow(EntityNotFoundException::new);
     }
 
-    public GameRelics updateRelicCharacter(String relicsName, String characterName) {
+    public Relic updateRelicCharacter(String relicsName, String characterName) {
 
-        GameCharacter character = characterRepository.findByName(characterName)
+        Character character = characterRepository.findByName(characterName)
                 .orElseThrow(EntityNotFoundException::new);
 
-        GameRelics relics = relicsRepository.findByrName(relicsName)
+        Relic relic = relicsRepository.findByName(relicsName)
                 .orElseThrow(EntityNotFoundException::new);
 
-        character.getRecRelics().add(relics);
-        relics.getCharacters().add(character);
+        character.getRecRelics().add(relic);
+        relic.getCharacters().add(character);
 
         characterRepository.save(character);
-        return relicsRepository.save(relics);
+        return relicsRepository.save(relic);
     }
 
     @Transactional
     public void deleteRelic(String relicName) {
-        GameRelics relics = relicsRepository.findByrName(relicName)
+        Relic relic = relicsRepository.findByName(relicName)
                 .orElseThrow(() -> new EntityNotFoundException("Relic with name " + relicName + " not found"));
 
         // Удаляем реликвию из всех связанных персонажей
-        relics.getCharacters().forEach(character -> character.getRecRelics().remove(relics));
+        relic.getCharacters().forEach(character -> character.getRecRelics().remove(relic));
 
-        relicsRepository.delete(relics);
+        relicsRepository.delete(relic);
     }
 
-    private RelicsDto toDto(GameRelics relics) {
+    private RelicsDto toDto(Relic relic) {
         RelicsDto dto = new RelicsDto();
 
-        dto.setId(relics.getId());
-        dto.setRName(relics.getRName());
-        dto.setRType(relics.getRType());
-        dto.setR2pcs(relics.getR2pcs());
-        dto.setR4pcs(relics.getR4pcs());
-        dto.setRRarity(relics.getRRarity());
+        dto.setId(relic.getId());
+        dto.setName(relic.getName());
+        dto.setType(relic.getType());
+        dto.setPcs2(relic.getPcs2());
+        dto.setPcs4(relic.getPcs4());
+        dto.setRarity(relic.getRarity());
 
         // Получаем идентификаторы связанных персонажей
-        if (relics.getCharacters() != null) {
-            dto.setCharacterIds(relics.getCharacters().stream()
-                    .map(GameCharacter::getId) // Берем только ID персонажей
+        if (relic.getCharacters() != null) {
+            dto.setCharacterId(relic.getCharacters().stream()
+                    .map(Character::getId) // Берем только ID персонажей
                     .collect(Collectors.toSet()));
         }
 

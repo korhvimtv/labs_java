@@ -1,12 +1,15 @@
 package com.example.glibrary.service;
 
 import com.example.glibrary.DTO.CharacterDto;
-import com.example.glibrary.model.GameCharacter;
-import com.example.glibrary.model.GameRegion;
-import com.example.glibrary.model.GameRelics;
+import com.example.glibrary.DTO.RegionDto;
+import com.example.glibrary.DTO.RelicsDto;
+import com.example.glibrary.cache.CharacterCache;
+import com.example.glibrary.model.Character;
+import com.example.glibrary.model.Relic;
 import com.example.glibrary.repository.CharacterRepository;
 import jakarta.persistence.EntityNotFoundException;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -19,15 +22,17 @@ import org.springframework.stereotype.Service;
 public class CharacterService {
 
     private final CharacterRepository characterRepository;
+    private final CharacterCache characterCache;
 
-    public CharacterService(CharacterRepository characterRepository) {
+    public CharacterService(CharacterRepository characterRepository, CharacterCache characterCache) {
 
         this.characterRepository = characterRepository;
+        this.characterCache = characterCache;
     }
 
-    public GameCharacter createCharacter(CharacterDto characterDto) {
+    public Character createCharacter(CharacterDto characterDto) {
 
-        GameCharacter character = new GameCharacter();
+        Character character = new Character();
 
         character.setName(characterDto.getName());
         character.setType(characterDto.getType());
@@ -47,12 +52,33 @@ public class CharacterService {
 
     public Optional<CharacterDto> readCharacterByName(String characterName) {
 
+        Optional<CharacterDto> cachedCharacter = characterCache.get(characterName);
+        if (cachedCharacter.isPresent()) {
+            return cachedCharacter;
+        }
+
         return characterRepository.findByName(characterName)
-                .map(this::toDto);
+                .map(character -> {
+                    CharacterDto dto = toDto(character);
+                    characterCache.put(characterName, dto);
+                    return dto;
+                });
     }
 
-    public GameCharacter updateCharacter(String characterName, CharacterDto characterDto) {
+    public List<CharacterDto> readCharacterByTypeAndRole(String type, String role) {
 
+        return characterRepository.findByTypeAndRole(type, role).stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<CharacterDto> findCharactersByRegionName(String regionName) {
+        return characterRepository.findByRegionName(regionName).stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public Character updateCharacter(String characterName, CharacterDto characterDto) {
         return characterRepository.findByName(characterName)
                 .map(character -> {
                     character.setName(characterDto.getName());
@@ -60,14 +86,21 @@ public class CharacterService {
                     character.setRole(characterDto.getRole());
                     character.setWeapon(characterDto.getWeapon());
                     character.setRarity(characterDto.getRarity());
-                    return characterRepository.save(character);
+
+                    Character updatedCharacter = characterRepository.save(character);
+
+                    if (characterCache.get(characterName).isPresent()) {
+                        characterCache.put(characterName, toDto(updatedCharacter));
+                    }
+
+                    return updatedCharacter;
                 }).orElseThrow(EntityNotFoundException::new);
     }
 
     @Transactional
     public void deleteCharacter(String characterName) {
 
-        GameCharacter character = characterRepository.findByName(characterName)
+        Character character = characterRepository.findByName(characterName)
                 .orElseThrow(() -> new EntityNotFoundException("Character with name " + characterName + " not found"));
 
         if (character.getRecRelics() != null) {
@@ -81,9 +114,11 @@ public class CharacterService {
         }
 
         characterRepository.delete(character);
+
+        characterCache.remove(characterName);
     }
 
-    private CharacterDto toDto(GameCharacter character) {
+    private CharacterDto toDto(Character character) {
         CharacterDto dto = new CharacterDto();
 
         dto.setId(character.getId());
@@ -93,15 +128,32 @@ public class CharacterService {
         dto.setWeapon(character.getWeapon());
         dto.setRarity(character.getRarity());
 
+        // Преобразование Relic в RelicsDto
+        Set<RelicsDto> relicsDtos = new HashSet<>();
         if (character.getRecRelics() != null) {
-            dto.setRelicIds(character.getRecRelics().stream()
-                    .map(GameRelics::getId)
-                    .collect(Collectors.toSet()));
+            for (Relic relic : character.getRecRelics()) {
+                RelicsDto relicDto = new RelicsDto();
+                relicDto.setId(relic.getId());
+                relicDto.setName(relic.getName());
+                relicDto.setType(relic.getType());
+                relicDto.setPcs2(relic.getPcs2());
+                relicDto.setPcs4(relic.getPcs4());
+                relicDto.setRarity(relic.getRarity());
+                relicsDtos.add(relicDto);
+            }
         }
+        dto.setRelic(relicsDtos);
 
+        // Преобразование Region в RegionDto
+        Set<RegionDto> regionDtos = new HashSet<>();
         if (character.getRegion() != null) {
-            dto.setRegionNames(Set.of(character.getRegion().getRegionName())); // Добавляем название региона в Set
+            RegionDto regionDto = new RegionDto();
+            regionDto.setId(character.getRegion().getId());
+            regionDto.setName(character.getRegion().getName());
+            regionDto.setArchon(character.getRegion().getArchon());
+            regionDtos.add(regionDto);
         }
+        dto.setRegion(regionDtos);
 
         return dto;
     }

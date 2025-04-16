@@ -1,13 +1,11 @@
 package com.example.glibrary.controller;
 
-import com.example.glibrary.DTO.CharacterDto;
 import com.example.glibrary.DTO.RegionDto;
-import com.example.glibrary.model.GameRegion;
+import com.example.glibrary.model.Region;
 import com.example.glibrary.service.RegionService;
 import java.util.List;
 
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,9 +22,9 @@ public class RegionController {
     }
 
     @PostMapping
-    public ResponseEntity<GameRegion> createRegion(@RequestBody RegionDto regionDto) {
+    public ResponseEntity<Region> createRegion(@RequestBody RegionDto regionDto) {
 
-        GameRegion createdRegion = regionService.createRegion(regionDto);
+        Region createdRegion = regionService.createRegion(regionDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdRegion);
     }
 
@@ -45,10 +43,12 @@ public class RegionController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{name}")
-    public ResponseEntity<GameRegion> updateRegion(@PathVariable String name, @RequestBody RegionDto regionDto) {
+    @GetMapping("/{region}/characters")
 
-        GameRegion updatedRegion = regionService.updateRegion(name, regionDto);
+    @PutMapping("/{name}")
+    public ResponseEntity<Region> updateRegion(@PathVariable String name, @RequestBody RegionDto regionDto) {
+
+        Region updatedRegion = regionService.updateRegion(name, regionDto);
         return ResponseEntity.status(HttpStatus.OK).body(updatedRegion);
     }
 

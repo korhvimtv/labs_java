@@ -1,14 +1,14 @@
 package com.example.glibrary.repository;
 
-import com.example.glibrary.model.GameRegion;
+import com.example.glibrary.model.Region;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface RegionRepository extends JpaRepository<GameRegion, Long> {
+public interface RegionRepository extends JpaRepository<Region, Long> {
 
-    Optional<GameRegion> findByRegionName(String regionName);
+    Optional<Region> findByName(String regionName);
 
-    void deleteByRegionName(String regionName);
+    void deleteByName(String regionName);
 }
