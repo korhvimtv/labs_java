@@ -51,4 +51,13 @@ public class Character {
     private Region region;
 
     public Character() {}
+
+    public Region getRegion() {
+        return region;
+    }
+
+    public void setRegion(Region region) {
+        this.region = region;
+    }
 }
+

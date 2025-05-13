@@ -1,0 +1,4 @@
+17:31:17.666 [pool-4-thread-1] INFO  c.e.glibrary.service.LogService - Started capturing logs for ID 7ef6bdee-26ba-49ca-98b3-22f73806c344
+17:31:26.449 [http-nio-8080-exec-5] INFO  c.e.glibrary.aspect.LoggingAspect - Вызов метода: ResponseEntity com.example.glibrary.controller.CharacterController.readCharacters()
+17:31:37.476 [http-nio-8080-exec-10] INFO  c.e.glibrary.aspect.LoggingAspect - Вызов метода: ResponseEntity com.example.glibrary.controller.LogController.getStatus(String)
+17:31:38.034 [pool-4-thread-1] INFO  c.e.glibrary.service.LogService - Finished capturing logs for ID 7ef6bdee-26ba-49ca-98b3-22f73806c344

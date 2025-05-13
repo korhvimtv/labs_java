@@ -1,0 +1,4 @@
+2025-05-13 15:39:02 INFO  [http-nio-8080-exec-6] c.e.glibrary.service.LogService - Started capturing logs for ID 92a03125-07a1-47e8-a2af-d0515b7968b2
+2025-05-13 15:39:02 [http-nio-8080-exec-6] INFO  c.e.glibrary.service.LogService - Started capturing logs for ID 92a03125-07a1-47e8-a2af-d0515b7968b2
+2025-05-13 15:39:22 INFO  [http-nio-8080-exec-6] c.e.glibrary.service.LogService - Finished capturing logs for ID 92a03125-07a1-47e8-a2af-d0515b7968b2
+2025-05-13 15:39:22 [http-nio-8080-exec-6] INFO  c.e.glibrary.service.LogService - Finished capturing logs for ID 92a03125-07a1-47e8-a2af-d0515b7968b2

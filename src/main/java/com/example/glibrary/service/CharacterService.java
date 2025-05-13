@@ -25,15 +25,13 @@ public class CharacterService {
     private final CharacterRepository characterRepository;
     private final CharacterCache characterCache;
     private final VisitCounterService visitCounterService;
-    private final RateLimiterService rateLimiterService;
 
     public CharacterService(CharacterRepository characterRepository, CharacterCache characterCache,
-                            VisitCounterService visitCounterService, RateLimiterService rateLimiterService) {
+                            VisitCounterService visitCounterService) {
 
         this.characterRepository = characterRepository;
         this.characterCache = characterCache;
         this.visitCounterService = visitCounterService;
-        this.rateLimiterService = rateLimiterService;
     }
 
     public Character createCharacter(CharacterDto characterDto) {
@@ -57,7 +55,7 @@ public class CharacterService {
         List<Character> savedCharacters = characterRepository.saveAll(characters);
 
         return savedCharacters.stream()
-                .map(this::toDto)
+                .map(character -> this.toDto(character))
                 .collect(Collectors.toList());
     }
 
@@ -75,8 +73,6 @@ public class CharacterService {
     }
 
     public CharacterDto readCharacterByName(String characterName) {
-
-        rateLimiterService.validateRequestRate();
 
         visitCounterService.incrementCharacterVisit(characterName);
 
@@ -157,7 +153,7 @@ public class CharacterService {
         characterCache.remove(characterName);
     }
 
-    private CharacterDto toDto(Character character) {
+    public CharacterDto toDto(Character character) {
 
         CharacterDto dto = new CharacterDto();
 
@@ -196,7 +192,7 @@ public class CharacterService {
         return dto;
     }
 
-    private Character toEntity(CharacterDto dto) {
+    public Character toEntity(CharacterDto dto) {
 
         Character character = new Character();
 

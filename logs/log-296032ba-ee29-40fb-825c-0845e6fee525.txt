@@ -1,0 +1,5 @@
+15:47:25.312 [pool-2-thread-1] INFO  c.e.glibrary.service.LogService - Started capturing logs for ID 296032ba-ee29-40fb-825c-0845e6fee525
+15:47:34.598 [http-nio-8080-exec-1] INFO  c.e.glibrary.aspect.LoggingAspect - Вызов метода: ResponseEntity com.example.glibrary.controller.LogController.getStatus(String)
+15:47:39.695 [http-nio-8080-exec-3] INFO  c.e.glibrary.aspect.LoggingAspect - Вызов метода: ResponseEntity com.example.glibrary.controller.RelicsController.readRelics()
+15:47:43.462 [http-nio-8080-exec-8] INFO  c.e.glibrary.aspect.LoggingAspect - Вызов метода: ResponseEntity com.example.glibrary.controller.LogController.getStatus(String)
+15:47:45.532 [pool-2-thread-1] INFO  c.e.glibrary.service.LogService - Finished capturing logs for ID 296032ba-ee29-40fb-825c-0845e6fee525

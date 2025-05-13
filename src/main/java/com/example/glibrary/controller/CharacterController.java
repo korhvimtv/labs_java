@@ -38,6 +38,7 @@ public class CharacterController {
     }
 
     @PostMapping("/bulk")
+    @Operation(summary = "Create Characters (bulk)")
     public ResponseEntity<List<CharacterDto>> createBulkCharacters(@RequestBody List<CharacterDto> characterDtos) {
         List<CharacterDto> createdCharacters = characterService.createBulkCharacters(characterDtos);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdCharacters);
@@ -76,9 +77,9 @@ public class CharacterController {
         return ResponseEntity.status(HttpStatus.OK).body(characters);
     }
 
-    @GetMapping("/region/{regionName}")
+    @GetMapping("/region/search")
     @Operation(summary = "Read Characters by Region name")
-    public ResponseEntity<List<CharacterDto>> findCharactersByRegionName(@Valid @PathVariable String regionName) {
+    public ResponseEntity<List<CharacterDto>> findCharactersByRegionName(@Valid @RequestParam String regionName) {
         List<CharacterDto> characters = characterService.findCharactersByRegionName(regionName);
         return ResponseEntity.ok(characters);
     }

@@ -2,15 +2,16 @@ package com.example.glibrary.service;
 
 import com.example.glibrary.DTO.CharacterDto;
 import com.example.glibrary.DTO.RegionDto;
+import com.example.glibrary.DTO.RelicsDto;
+import com.example.glibrary.cache.CharacterCache;
 import com.example.glibrary.exception.NotFoundException;
 import com.example.glibrary.model.Character;
 import com.example.glibrary.model.Region;
+import com.example.glibrary.model.Relic;
 import com.example.glibrary.repository.CharacterRepository;
 import com.example.glibrary.repository.RegionRepository;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -23,12 +24,14 @@ public class RegionService {
 
     private final RegionRepository regionRepository;
     private final CharacterRepository characterRepository;
+    private final CharacterCache characterCache;
     private final Map<String, RegionDto> cache = new ConcurrentHashMap<>();
 
-    public RegionService(RegionRepository regionRepository, CharacterRepository characterRepository) {
+    public RegionService(RegionRepository regionRepository, CharacterRepository characterRepository, CharacterCache characterCache) {
 
         this.regionRepository = regionRepository;
         this.characterRepository = characterRepository;
+        this.characterCache = characterCache;
     }
 
     public Region createRegion(RegionDto regionDto) {
@@ -88,7 +91,10 @@ public class RegionService {
         character.setRegion(region);
         region.getCharacters().add(character);
 
+
         characterRepository.save(character);
+        toCharacterDto(character);
+        characterCache.put(characterName, toCharacterDto(character));
         regionRepository.save(region);
 
         return toDto(region);
@@ -112,7 +118,7 @@ public class RegionService {
     }
 
 
-    private RegionDto toDto(Region region) {
+    public RegionDto toDto(Region region) {
         RegionDto dto = new RegionDto();
 
         dto.setId(region.getId());
@@ -129,14 +135,41 @@ public class RegionService {
         return dto;
     }
 
-    private CharacterDto toCharacterDto(Character character) {
+    public CharacterDto toCharacterDto(Character character) {
+
         CharacterDto dto = new CharacterDto();
+
         dto.setId(character.getId());
         dto.setName(character.getName());
         dto.setType(character.getType());
         dto.setRole(character.getRole());
         dto.setWeapon(character.getWeapon());
         dto.setRarity(character.getRarity());
+
+        Set<RelicsDto> relicsDtos = new HashSet<>();
+        if (character.getRecRelics() != null) {
+            for (Relic relic : character.getRecRelics()) {
+                RelicsDto relicDto = new RelicsDto();
+                relicDto.setId(relic.getId());
+                relicDto.setName(relic.getName());
+                relicDto.setType(relic.getType());
+                relicDto.setPcs2(relic.getPcs2());
+                relicDto.setPcs4(relic.getPcs4());
+                relicDto.setRarity(relic.getRarity());
+                relicsDtos.add(relicDto);
+            }
+        }
+        dto.setRelic(relicsDtos);
+
+        Set<RegionDto> regionDtos = new HashSet<>();
+        if (character.getRegion() != null) {
+            RegionDto regionDto = new RegionDto();
+            regionDto.setId(character.getRegion().getId());
+            regionDto.setName(character.getRegion().getName());
+            regionDto.setArchon(character.getRegion().getArchon());
+            regionDtos.add(regionDto);
+        }
+        dto.setRegion(regionDtos);
 
         return dto;
     }

@@ -1,0 +1,4 @@
+2025-05-13 15:17:20 INFO  [http-nio-8080-exec-7] L.1b86488f-1d66-43cf-87f6-5861c80126d0 - Starting log generation for ID: 1b86488f-1d66-43cf-87f6-5861c80126d0
+2025-05-13 15:17:40 INFO  [http-nio-8080-exec-7] L.1b86488f-1d66-43cf-87f6-5861c80126d0 - Log content for ID: 1b86488f-1d66-43cf-87f6-5861c80126d0
+2025-05-13 15:17:40 INFO  [http-nio-8080-exec-7] L.1b86488f-1d66-43cf-87f6-5861c80126d0 - Additional log line for ID: 1b86488f-1d66-43cf-87f6-5861c80126d0
+2025-05-13 15:17:40 INFO  [http-nio-8080-exec-7] L.1b86488f-1d66-43cf-87f6-5861c80126d0 - Log generation completed for ID: 1b86488f-1d66-43cf-87f6-5861c80126d0

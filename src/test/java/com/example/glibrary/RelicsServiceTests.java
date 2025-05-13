@@ -78,10 +78,8 @@ class RelicsServiceTest {
 
         when(relicsRepository.findByName("Thundering Fury")).thenReturn(Optional.of(relic));
 
-        // First call stores to cache
         RelicsDto dto1 = relicsService.readRelicsByName("Thundering Fury");
 
-        // Second call should use cache
         RelicsDto dto2 = relicsService.readRelicsByName("Thundering Fury");
 
         assertEquals(dto1.getName(), dto2.getName());
@@ -140,7 +138,6 @@ class RelicsServiceTest {
         when(characterRepository.findByName("Xiao")).thenReturn(Optional.of(character));
         when(relicsRepository.findByName("Viridescent Venerer")).thenReturn(Optional.of(relic));
 
-        // 👉 Добавляем возврат объекта при сохранении
         when(relicsRepository.save(any(Relic.class))).thenReturn(relic);
 
         Relic result = relicsService.updateRelicCharacter("Viridescent Venerer", "Xiao");
